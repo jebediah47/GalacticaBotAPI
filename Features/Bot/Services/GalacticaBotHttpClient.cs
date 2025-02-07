@@ -9,11 +9,7 @@ public sealed class GalacticaBotHttpClient
     public GalacticaBotHttpClient(HttpClient httpClient, IConfiguration configuration)
     {
         _client = httpClient;
-        var apiBaseUrl = configuration["GalacticaBot:ApiBaseUrl"];
-        if (string.IsNullOrEmpty(apiBaseUrl))
-        {
-            throw new InvalidOperationException("API Base URL is not configured.");
-        }
+        var apiBaseUrl = Constants.GalacticaBotApiBaseUrl;
         _client.BaseAddress = new Uri(apiBaseUrl);
     }
 
