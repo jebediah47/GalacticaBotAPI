@@ -10,9 +10,9 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddOpenApi();
-
 Constants.LoadConfiguration(builder.Configuration);
+
+builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient<GalacticaBotHttpClient>();
 
