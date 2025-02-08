@@ -7,10 +7,10 @@ namespace GalacticaBotAPI.Features.Shared.Services;
 public sealed class DiscordApiBotHttpClient
 {
     private readonly HttpClient _client;
-    
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions 
-    { 
-        PropertyNameCaseInsensitive = true 
+
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
     };
 
     public DiscordApiBotHttpClient(HttpClient httpClient)
