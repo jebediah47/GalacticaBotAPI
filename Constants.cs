@@ -4,13 +4,16 @@ public static class Constants
 {
     public static string DiscordClientId { get; private set; }
     public static string DiscordClientSecret { get; private set; }
+    public static string GalacticaBotToken { get; private set; }
     public static string GalacticaBotApiBaseUrl { get; private set; }
+    public const string DiscordApiBaseUrl = "https://discord.com/api/v10/";
 
     public static void LoadConfiguration(IConfiguration configuration)
     {
         DiscordClientId = configuration["Discord:ClientId"];
         DiscordClientSecret = configuration["Discord:ClientSecret"];
         GalacticaBotApiBaseUrl = configuration["GalacticaBot:ApiBaseUrl"];
+        GalacticaBotToken = configuration["GalacticaBot:Token"];
         ValidateConstants();
     }
 

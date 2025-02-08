@@ -12,4 +12,4 @@ public enum PresenceType
     Competing,
 }
 
-public record BotPresence(string presence, PresenceType presence_type);
+public record BotPresence(string Presence, PresenceType Type);

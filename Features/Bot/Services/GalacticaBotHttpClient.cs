@@ -6,11 +6,10 @@ public sealed class GalacticaBotHttpClient
 {
     private readonly HttpClient _client;
 
-    public GalacticaBotHttpClient(HttpClient httpClient, IConfiguration configuration)
+    public GalacticaBotHttpClient(HttpClient httpClient)
     {
         _client = httpClient;
-        var apiBaseUrl = Constants.GalacticaBotApiBaseUrl;
-        _client.BaseAddress = new Uri(apiBaseUrl);
+        _client.BaseAddress = new Uri(Constants.GalacticaBotApiBaseUrl);
     }
 
     public async Task<BotPresence> GetBotStatus()

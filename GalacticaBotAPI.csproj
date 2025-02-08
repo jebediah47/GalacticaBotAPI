@@ -10,13 +10,12 @@
 
     <ItemGroup>
         <PackageReference Include="AspNet.Security.OAuth.Discord" Version="9.0.0" />
+        <PackageReference Include="Discord.Net.Rest" Version="3.17.1" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0-preview1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
+        <PackageReference Include="Remora.Discord.API" Version="78.0.0" />
+        <PackageReference Include="Remora.Discord.Rest" Version="51.0.0" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Features\Shared\Services\" />
     </ItemGroup>
 
 </Project>
