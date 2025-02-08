@@ -6,7 +6,7 @@ public static class Constants
     public static string DiscordClientSecret { get; private set; }
     public static string GalacticaBotToken { get; private set; }
     public static string GalacticaBotApiBaseUrl { get; private set; }
-    public const string DiscordApiBaseUrl = "https://discord.com/api/v10/";
+    public static readonly string DiscordApiBaseUrl = "https://discord.com/api/v10/";
 
     public static void LoadConfiguration(IConfiguration configuration)
     {
