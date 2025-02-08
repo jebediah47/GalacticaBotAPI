@@ -14,8 +14,6 @@ public sealed class BotPresenceValidator : AbstractValidator<BotPresence>
             .NotEmpty()
             .WithMessage("Presence must not exceed 50 characters.");
 
-        RuleFor(x => x.Type)
-            .IsInEnum()
-            .WithMessage("Presence type must be a valid enum value.");
+        RuleFor(x => x.Type).IsInEnum().WithMessage("Presence type must be a valid enum value.");
     }
 }
