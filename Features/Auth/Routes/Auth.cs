@@ -18,7 +18,7 @@ public static class Auth
             () =>
                 Results.Problem(
                     title: "Access Denied",
-                    detail: "Only the bot owner is permitted to log in.",
+                    detail: "Only authorized individuals are allowed to log in.",
                     statusCode: 403
                 )
         );
