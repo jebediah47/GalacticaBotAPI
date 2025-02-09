@@ -8,7 +8,7 @@ public sealed class DiscordApiBotHttpClient
 {
     private readonly HttpClient _client;
 
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
     };
