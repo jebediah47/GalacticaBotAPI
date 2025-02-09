@@ -1,6 +1,7 @@
 using FluentValidation;
-using GalacticaBotAPI.Features.Bot.DTO;
+using GalacticaBotAPI.Features.Bot.Models;
 using GalacticaBotAPI.Features.Bot.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GalacticaBotAPI.Features.Bot.Routes;
 
@@ -9,15 +10,17 @@ public static class Bot
     public static RouteGroupBuilder MapBotEndpoints(this WebApplication app)
     {
         var bot = app.MapGroup("bot");
+
         bot.MapGet(
             "presence",
             async (GalacticaBotHttpClient botHttpClient) => await botHttpClient.GetBotStatus()
         );
+
         bot.MapPost(
             "presence",
             async (
                 GalacticaBotHttpClient botHttpClient,
-                BotPresence botPresence,
+                [FromBody] BotPresence botPresence,
                 IValidator<BotPresence> validator
             ) =>
             {
@@ -31,6 +34,7 @@ public static class Bot
                 return Results.Ok(result);
             }
         );
+
         return bot;
     }
 }

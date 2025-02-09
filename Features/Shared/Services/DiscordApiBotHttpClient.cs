@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using GalacticaBotAPI.Features.Shared.DTO;
+using GalacticaBotAPI.Features.Shared.Models;
 
 namespace GalacticaBotAPI.Features.Shared.Services;
 

@@ -2,6 +2,7 @@ namespace GalacticaBotAPI;
 
 public static class Constants
 {
+    public static string DbConnectionString { get; private set; }
     public static string DiscordClientId { get; private set; }
     public static string DiscordClientSecret { get; private set; }
     public static string GalacticaBotToken { get; private set; }
@@ -10,6 +11,7 @@ public static class Constants
 
     public static void LoadConfiguration(IConfiguration configuration)
     {
+        DbConnectionString = configuration["Db:ConnectionString"];
         DiscordClientId = configuration["Discord:ClientId"];
         DiscordClientSecret = configuration["Discord:ClientSecret"];
         GalacticaBotApiBaseUrl = configuration["GalacticaBot:ApiBaseUrl"];

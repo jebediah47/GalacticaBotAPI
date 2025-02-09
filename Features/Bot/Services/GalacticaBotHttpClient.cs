@@ -1,4 +1,4 @@
-using GalacticaBotAPI.Features.Bot.DTO;
+using GalacticaBotAPI.Features.Bot.Models;
 
 namespace GalacticaBotAPI.Features.Bot.Services;
 

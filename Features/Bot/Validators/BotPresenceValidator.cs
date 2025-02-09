@@ -1,5 +1,5 @@
 using FluentValidation;
-using GalacticaBotAPI.Features.Bot.DTO;
+using GalacticaBotAPI.Features.Bot.Models;
 
 namespace GalacticaBotAPI.Features.Bot.Validators;
 

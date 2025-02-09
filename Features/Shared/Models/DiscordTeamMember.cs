@@ -1,4 +1,4 @@
-namespace GalacticaBotAPI.Features.Shared.DTO;
+namespace GalacticaBotAPI.Features.Shared.Models;
 
 public record DiscordTeamMember(
     int MembershipState,

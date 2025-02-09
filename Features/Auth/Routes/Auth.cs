@@ -12,6 +12,7 @@ public static class Auth
             "login",
             () => Results.Challenge(new AuthenticationProperties { RedirectUri = "/" })
         );
+
         auth.MapGet(
             "denied",
             () =>

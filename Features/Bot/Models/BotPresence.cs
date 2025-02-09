@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace GalacticaBotAPI.Features.Bot.DTO;
+namespace GalacticaBotAPI.Features.Bot.Models;
 
 public enum PresenceType
 {
