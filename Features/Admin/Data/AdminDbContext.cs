@@ -23,6 +23,8 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
             entity.Property(e => e.Role).HasConversion<int>();
 
             entity.Property(e => e.IsProfileComplete).HasDefaultValue(false);
+
+            entity.Property(e => e.LastLogin).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }

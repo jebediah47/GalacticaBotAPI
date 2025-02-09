@@ -2,6 +2,7 @@ using System.Security.Claims;
 using AspNet.Security.OAuth.Discord;
 using GalacticaBotAPI.Features.Admin.Services;
 using GalacticaBotAPI.Features.Shared.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
@@ -41,86 +42,127 @@ public static class AuthenticationService
                             context.HttpContext.RequestServices.GetRequiredService<DiscordApiBotHttpClient>();
                         var adminService =
                             context.HttpContext.RequestServices.GetRequiredService<AdminManagementService>();
-                        var botOwnerId = await discordApiClient.GetBotOwner();
-
-                        var userIdClaim = context.Principal.Claims.FirstOrDefault(c =>
-                            c.Type == ClaimTypes.NameIdentifier
-                        );
-
-                        if (userIdClaim == null)
+                        try
                         {
-                            context.Fail("Invalid user data received from Discord.");
-                            context.HandleResponse();
-                            context.Response.Redirect("/auth/denied");
-                            return;
-                        }
+                            var botOwnerId = await discordApiClient.GetBotOwner();
 
-                        // Check if user is the bot owner
-                        if (userIdClaim.Value == botOwnerId)
-                        {
-                            // If this is the bot owner's first login, add them to the database
-                            if (!await adminService.IsUserAuthorizedAsync(botOwnerId))
+                            var userIdClaim = context.Principal.Claims.FirstOrDefault(c =>
+                                c.Type == ClaimTypes.NameIdentifier
+                            );
+
+                            if (userIdClaim == null)
                             {
-                                await adminService.AppointAdministratorAsync(
-                                    botOwnerId,
-                                    botOwnerId
-                                ); // Self-appointment for bot owner
+                                await HandleAuthFailure(
+                                    context,
+                                    "Invalid user data received from Discord."
+                                );
+                                return;
                             }
 
-                            // Get user details from claims
-                            var username = context
-                                .Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)
-                                ?.Value;
-                            var email = context
-                                .Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)
-                                ?.Value;
-                            var avatarHash = context
-                                .Principal.Claims.FirstOrDefault(c =>
-                                    c.Type == "urn:discord:avatar:hash"
-                                )
-                                ?.Value;
+                            // Extract user details from claims
+                            var userDetails = ExtractUserDetails(context.Principal);
 
-                            // Complete the profile
-                            await adminService.CompleteUserProfileAsync(
-                                botOwnerId,
-                                username!,
-                                email!,
-                                avatarHash ?? string.Empty
-                            );
-                            return;
-                        }
+                            // Handle bot owner authentication
+                            if (userIdClaim.Value == botOwnerId)
+                            {
+                                await HandleBotOwnerAuth(adminService, botOwnerId, userDetails);
+                                return;
+                            }
 
-                        // If not bot owner, check if user is an authorized admin
-                        if (!await adminService.IsUserAuthorizedAsync(userIdClaim.Value))
-                        {
-                            context.Fail("Access denied: User is not authorized.");
-                            context.HandleResponse();
-                            context.Response.Redirect("/auth/denied");
-                            return;
-                        }
-
-                        // Update admin's profile information
-                        var adminUsername = context
-                            .Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)
-                            ?.Value;
-                        var adminEmail = context
-                            .Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)
-                            ?.Value;
-                        var adminAvatarHash = context
-                            .Principal.Claims.FirstOrDefault(c =>
-                                c.Type == "urn:discord:avatar:hash"
+                            // Handle regular admin authentication
+                            if (
+                                !await HandleAdminAuth(adminService, userIdClaim.Value, userDetails)
                             )
-                            ?.Value;
-
-                        await adminService.CompleteUserProfileAsync(
-                            userIdClaim.Value,
-                            adminUsername!,
-                            adminEmail!,
-                            adminAvatarHash ?? string.Empty
-                        );
+                            {
+                                await HandleAuthFailure(
+                                    context,
+                                    "Access denied: User is not authorized."
+                                );
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            await HandleAuthFailure(context, e.Message);
+                        }
+                    },
+                    OnRemoteFailure = context =>
+                    {
+                        context.Response.Redirect("/auth/denied");
+                        context.HandleResponse();
+                        return Task.CompletedTask;
                     },
                 };
             });
         return services;
+    }
+
+    private static Task HandleAuthFailure(TicketReceivedContext context, string message)
+    {
+        context.Fail(message);
+        context.HandleResponse();
+        context.Response.Redirect("/auth/denied");
+        return Task.CompletedTask;
+    }
+
+    private static (string username, string email, string avatarHash) ExtractUserDetails(
+        ClaimsPrincipal? principal
+    )
+    {
+        if (principal == null)
+            return (string.Empty, string.Empty, string.Empty);
+
+        var username =
+            principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? string.Empty;
+        var email =
+            principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? string.Empty;
+        var avatarHash =
+            principal.Claims.FirstOrDefault(c => c.Type == "urn:discord:avatar:hash")?.Value
+            ?? string.Empty;
+
+        return (username, email, avatarHash);
+    }
+
+    private static async Task HandleBotOwnerAuth(
+        AdminManagementService adminService,
+        string botOwnerId,
+        (string username, string email, string avatarHash) userDetails
+    )
+    {
+        // If this is the bot owner's first login, add them to the database
+        if (!await adminService.IsUserAuthorizedAsync(botOwnerId))
+        {
+            await adminService.AppointAdministratorAsync(botOwnerId, botOwnerId);
+        }
+
+        // Update the bot owner's profile
+        await adminService.CompleteUserProfileAsync(
+            botOwnerId,
+            userDetails.username,
+            userDetails.email,
+            userDetails.avatarHash
+        );
+    }
+
+    private static async Task<bool> HandleAdminAuth(
+        AdminManagementService adminService,
+        string userId,
+        (string username, string email, string avatarHash) userDetails
+    )
+    {
+        // Check if user is an authorized admin
+        if (!await adminService.IsUserAuthorizedAsync(userId))
+        {
+            return false;
+        }
+
+        // Update admin's profile information
+        await adminService.CompleteUserProfileAsync(
+            userId,
+            userDetails.username,
+            userDetails.email,
+            userDetails.avatarHash
+        );
+
+        return true;
     }
 }
