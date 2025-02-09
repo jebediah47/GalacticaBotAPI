@@ -14,5 +14,4 @@ public class AdminUser
     public string? AvatarHash { get; set; }
     public UserRole Role { get; set; }
     public bool IsProfileComplete { get; set; }
-    public DateTimeOffset LastLogin { get; set; }
 }

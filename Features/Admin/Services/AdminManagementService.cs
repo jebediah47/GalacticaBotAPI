@@ -114,7 +114,6 @@ public class AdminManagementService
         user.Email = email;
         user.AvatarHash = avatarHash;
         user.IsProfileComplete = true;
-        user.LastLogin = DateTimeOffset.UtcNow;
 
         await _context.SaveChangesAsync();
 
