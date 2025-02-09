@@ -21,7 +21,7 @@ public class AdminManagementService
     private async Task<bool> IsBotOwnerAsync(string userId)
     {
         var user = await _context.AdminUsers.FirstOrDefaultAsync(u => u.UserId == userId);
-
+        
         return user?.Role == UserRole.BotOwner;
     }
 
