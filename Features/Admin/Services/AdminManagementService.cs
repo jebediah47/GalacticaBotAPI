@@ -1,5 +1,6 @@
 using GalacticaBotAPI.Features.Admin.Data;
 using GalacticaBotAPI.Features.Admin.Models;
+using GalacticaBotAPI.Features.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace GalacticaBotAPI.Features.Admin.Services;
@@ -7,10 +8,15 @@ namespace GalacticaBotAPI.Features.Admin.Services;
 public class AdminManagementService
 {
     private readonly AdminDbContext _context;
+    private readonly DiscordApiBotHttpClient _discordApiBotHttpClient;
 
-    public AdminManagementService(AdminDbContext context)
+    public AdminManagementService(
+        AdminDbContext context,
+        DiscordApiBotHttpClient discordApiBotHttpClient
+    )
     {
         _context = context;
+        _discordApiBotHttpClient = discordApiBotHttpClient;
     }
 
     public async Task<bool> IsUserAuthorizedAsync(string userId)
@@ -21,12 +27,34 @@ public class AdminManagementService
     private async Task<bool> IsBotOwnerAsync(string userId)
     {
         var user = await _context.AdminUsers.FirstOrDefaultAsync(u => u.UserId == userId);
-        
+
         return user?.Role == UserRole.BotOwner;
     }
 
     public async Task<bool> AppointAdministratorAsync(string botOwnerId, string newAdminId)
     {
+        // Check if the database table is empty
+        if (!await _context.AdminUsers.AnyAsync(u => u.UserId == botOwnerId))
+        {
+            // Check if the bot owner is the one making the request
+            if (botOwnerId == await _discordApiBotHttpClient.GetBotOwner())
+            {
+                // Create the bot owner
+                var botOwner = new AdminUser
+                {
+                    UserId = botOwnerId,
+                    Role = UserRole.BotOwner,
+                    IsProfileComplete = false,
+                };
+
+                await _context.AdminUsers.AddAsync(botOwner);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return false;
+            }
+        }
         // Verify the appointer is the bot owner
         if (!await IsBotOwnerAsync(botOwnerId))
             return false;
