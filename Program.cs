@@ -24,6 +24,7 @@ builder.Services.AddDbContext<AdminDbContext>(options =>
         npgsqlOptions => npgsqlOptions.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)
     );
 });
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<AdminManagementService>();
 
 builder.Services.AddHttpClient<GalacticaBotHttpClient>();
