@@ -55,6 +55,7 @@ public class AdminManagementService
                 return false;
             }
         }
+
         // Verify the appointer is the bot owner
         if (!await IsBotOwnerAsync(botOwnerId))
             return false;
