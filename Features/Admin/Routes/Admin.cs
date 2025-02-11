@@ -1,4 +1,4 @@
-using GalacticaBotAPI.Features.Admin.Models;
+using System.Security.Claims;
 using GalacticaBotAPI.Features.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,19 +6,31 @@ namespace GalacticaBotAPI.Features.Admin.Routes;
 
 public static class Admin
 {
-    public static RouteGroupBuilder MapAdminEndpoints(this WebApplication app)
+    private static string? GetAuthenticatedUserId(HttpContext context)
+    {
+        return context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? null;
+    }
+
+    public static void MapAdminEndpoints(this WebApplication app)
     {
         var admin = app.MapGroup("admin");
 
         admin.MapPost(
             "appoint",
             async (
-                [FromQuery] string botOwnerId,
                 [FromQuery] string newAdminId,
-                AdminManagementService adminService
+                AdminManagementService adminService,
+                HttpContext context
             ) =>
             {
-                var result = await adminService.AppointAdministratorAsync(botOwnerId, newAdminId);
+                var authenticatedUserId = GetAuthenticatedUserId(context);
+                if (authenticatedUserId == null)
+                    return Results.Unauthorized();
+
+                var result = await adminService.AppointAdministratorAsync(
+                    authenticatedUserId,
+                    newAdminId
+                );
 
                 if (!result)
                 {
@@ -34,12 +46,19 @@ public static class Admin
         admin.MapDelete(
             "/remove",
             async (
-                [FromQuery] string botOwnerId,
                 [FromQuery] string adminId,
-                AdminManagementService adminService
+                AdminManagementService adminService,
+                HttpContext context
             ) =>
             {
-                var result = await adminService.RemoveAdministratorAsync(botOwnerId, adminId);
+                var authenticatedUserId = GetAuthenticatedUserId(context);
+                if (authenticatedUserId == null)
+                    return Results.Unauthorized();
+
+                var result = await adminService.RemoveAdministratorAsync(
+                    authenticatedUserId,
+                    adminId
+                );
 
                 if (!result)
                 {
@@ -51,33 +70,5 @@ public static class Admin
                 return Results.Ok("Administrator removed successfully.");
             }
         );
-
-        admin.MapPost(
-            "/complete-profile",
-            async (
-                [FromQuery] string userId,
-                [FromBody] ProfileUpdateRequest request,
-                AdminManagementService adminService
-            ) =>
-            {
-                var result = await adminService.CompleteUserProfileAsync(
-                    userId,
-                    request.Username,
-                    request.Email,
-                    request.AvatarHash
-                );
-
-                if (!result)
-                {
-                    return Results.BadRequest(
-                        "Failed to update profile. User may not exist in the database."
-                    );
-                }
-
-                return Results.Ok("Profile updated successfully.");
-            }
-        );
-
-        return admin;
     }
 }

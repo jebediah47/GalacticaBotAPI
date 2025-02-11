@@ -40,7 +40,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithDarkMode(true).WithDarkModeToggle(false).WithTheme(ScalarTheme.Kepler);
+    });
 }
 
 app.UseHttpsRedirection();
